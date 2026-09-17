@@ -11,14 +11,15 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     protected $table = 'users';
+
     protected $primaryKey = 'id_user';
 
     public $timestamps = false;
 
     protected $fillable = [
-        'username',
         'email',
         'password',
+        'google_id',
         'id_role',
         'status'
     ];
@@ -27,16 +28,33 @@ class User extends Authenticatable
         'password'
     ];
 
+    // =========================
+    // ROLE
+    // =========================
     public function role()
     {
-        return $this->belongsTo(Role::class, 'id_role', 'id_role');
+        return $this->belongsTo(
+            Role::class,
+            'id_role',
+            'id_role'
+        );
     }
 
+    // =========================
+    // PROFIL
+    // =========================
     public function profil()
     {
-        return $this->hasOne(Profil::class, 'id_user', 'id_user');
+        return $this->hasOne(
+            Profil::class,
+            'id_user',
+            'id_user'
+        );
     }
 
+    // =========================
+    // MINAT
+    // =========================
     public function minat()
     {
         return $this->belongsToMany(
@@ -47,6 +65,9 @@ class User extends Authenticatable
         )->withPivot('id_userminat');
     }
 
+    // =========================
+    // MINAT USER
+    // =========================
     public function minatUser()
     {
         return $this->hasMany(
@@ -56,6 +77,9 @@ class User extends Authenticatable
         );
     }
 
+    // =========================
+    // KOMUNITAS YANG DIPIMPIN
+    // =========================
     public function komunitasDipimpin()
     {
         return $this->hasMany(
@@ -65,6 +89,9 @@ class User extends Authenticatable
         );
     }
 
+    // =========================
+    // KOMUNITAS YANG DIIKUTI
+    // =========================
     public function komunitas()
     {
         return $this->belongsToMany(
@@ -79,6 +106,9 @@ class User extends Authenticatable
         );
     }
 
+    // =========================
+    // MEMBER KOMUNITAS
+    // =========================
     public function memberKomunitas()
     {
         return $this->hasMany(
@@ -88,6 +118,9 @@ class User extends Authenticatable
         );
     }
 
+    // =========================
+    // POST
+    // =========================
     public function posts()
     {
         return $this->hasMany(
@@ -97,6 +130,9 @@ class User extends Authenticatable
         );
     }
 
+    // =========================
+    // KOMENTAR
+    // =========================
     public function komentar()
     {
         return $this->hasMany(
@@ -106,6 +142,9 @@ class User extends Authenticatable
         );
     }
 
+    // =========================
+    // LIKE
+    // =========================
     public function likes()
     {
         return $this->hasMany(
@@ -115,6 +154,9 @@ class User extends Authenticatable
         );
     }
 
+    // =========================
+    // PESAN
+    // =========================
     public function pesan()
     {
         return $this->hasMany(
@@ -124,6 +166,9 @@ class User extends Authenticatable
         );
     }
 
+    // =========================
+    // WEBINAR YANG DIBUAT
+    // =========================
     public function webinarDibuat()
     {
         return $this->hasMany(
@@ -133,6 +178,9 @@ class User extends Authenticatable
         );
     }
 
+    // =========================
+    // WEBINAR YANG DIIKUTI
+    // =========================
     public function webinar()
     {
         return $this->belongsToMany(
@@ -146,6 +194,9 @@ class User extends Authenticatable
         );
     }
 
+    // =========================
+    // PARTISIPASI WEBINAR
+    // =========================
     public function partisipasiWebinar()
     {
         return $this->hasMany(
@@ -155,6 +206,9 @@ class User extends Authenticatable
         );
     }
 
+    // =========================
+    // PENGAJUAN
+    // =========================
     public function pengajuan()
     {
         return $this->hasMany(
@@ -164,6 +218,9 @@ class User extends Authenticatable
         );
     }
 
+    // =========================
+    // REPORT
+    // =========================
     public function reports()
     {
         return $this->hasMany(
@@ -173,6 +230,9 @@ class User extends Authenticatable
         );
     }
 
+    // =========================
+    // NOTIFIKASI
+    // =========================
     public function notifikasi()
     {
         return $this->hasMany(
