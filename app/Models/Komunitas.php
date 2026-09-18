@@ -24,6 +24,24 @@ class Komunitas extends Model
         'dibuat_pada'
     ];
 
+    protected $casts = [
+        'dibuat_pada' => 'datetime',
+    ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $komunitas) {
+            if (empty($komunitas->dibuat_pada)) {
+                $komunitas->dibuat_pada = now();
+            }
+        });
+    }
+
+    public function scopeAktif($query)
+    {
+        return $query->where('status', 'aktif');
+    }
+
     public function leader()
     {
         return $this->belongsTo(
@@ -90,5 +108,41 @@ class Komunitas extends Model
             'id_komunitas',
             'id_komunitas'
         );
+    }
+
+    /** Ambil group chat komunitas, buat bila belum ada. */
+    public function chatroomAtauBuat(): Chatroom
+    {
+        return $this->chatroom()->firstOrCreate(
+            ['id_komunitas' => $this->id_komunitas],
+            ['nama' => 'Group chat ' . $this->nama_komunitas]
+        );
+    }
+
+    public function getJumlahMemberAttribute(): int
+    {
+        return (int) ($this->attributes['member_komunitas_count']
+            ?? $this->memberKomunitas()->count());
+    }
+
+    public function getSudahGabungAttribute(): bool
+    {
+        if (!auth()->check()) {
+            return false;
+        }
+
+        if (isset($this->attributes['gabung_count'])) {
+            return (int) $this->attributes['gabung_count'] > 0;
+        }
+
+        return $this->memberKomunitas()
+            ->where('id_user', auth()->id())
+            ->exists();
+    }
+
+    public function getSayaLeaderAttribute(): bool
+    {
+        return auth()->check()
+            && (int) $this->id_leader === (int) auth()->id();
     }
 }

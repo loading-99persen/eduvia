@@ -32,6 +32,9 @@ return new class extends Migration
 
             $table->text('media_sosial')->nullable();
 
+            // KOLOM TAMBAHAN
+            $table->string('preferensi_belajar', 30)->nullable();
+
             $table->unique('id_user');
 
             $table->foreign('id_user')

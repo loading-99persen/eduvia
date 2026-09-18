@@ -25,6 +25,20 @@ class Report extends Model
         'diproses_pada'
     ];
 
+    protected $casts = [
+        'dibuat_pada'   => 'datetime',
+        'diproses_pada' => 'datetime',
+    ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $report) {
+            if (empty($report->dibuat_pada)) {
+                $report->dibuat_pada = now();
+            }
+        });
+    }
+
     public function user()
     {
         return $this->belongsTo(

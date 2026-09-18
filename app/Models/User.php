@@ -40,6 +40,12 @@ class User extends Authenticatable
         );
     }
 
+
+    public function isAdmin(): bool
+{
+    return $this->id_role === 1;
+}
+
     // =========================
     // PROFIL
     // =========================
@@ -240,5 +246,39 @@ class User extends Authenticatable
             'id_user',
             'id_user'
         );
+    }
+
+    // =========================
+    // HELPER
+    // =========================
+
+    /** Nama tampilan: diambil dari profil, jatuh ke bagian depan email. */
+    public function getNamaAttribute(): string
+    {
+        $nama = $this->profil->nama_lengkap ?? null;
+
+        return $nama ?: (string) strstr($this->email . '@', '@', true);
+    }
+
+    public function aktif(): bool
+    {
+        return $this->status === 'aktif';
+    }
+
+    /** Profil dianggap lengkap bila data wajib sudah diisi. */
+    public function profilLengkap(): bool
+    {
+        $profil = $this->profil;
+
+        return (bool) $profil
+            && filled($profil->nama_lengkap)
+            && $profil->nama_lengkap !== 'Pengguna Baru'
+            && filled($profil->tingkat_pendidikan);
+    }
+
+    /** Onboarding selesai bila minat belajar sudah dipilih. */
+    public function onboardingSelesai(): bool
+    {
+        return $this->minat()->exists();
     }
 }

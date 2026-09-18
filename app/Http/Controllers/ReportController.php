@@ -3,66 +3,74 @@
 namespace App\Http\Controllers;
 
 use App\Models\Report;
+use App\Support\Notif;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class ReportController extends Controller
 {
-    // Daftar laporan user
+    protected array $tipeValid = ['post', 'komentar', 'user', 'komunitas', 'webinar'];
+
+    /** Laporan yang pernah dikirim user. */
     public function index()
     {
-        $reports = Report::where('id_user', Auth::id())
-            ->latest()
+        $reports = Report::where('id_user', auth()->id())
+            ->orderByDesc('dibuat_pada')
             ->get();
 
         return view('report.index', compact('reports'));
     }
 
-    // Kirim laporan
+    /** Form laporan, dibuka dari tombol "Laporkan" pada konten. */
+    public function create(Request $request)
+    {
+        $tipe = in_array($request->query('tipe'), $this->tipeValid)
+            ? $request->query('tipe')
+            : 'post';
+
+        $idTarget = (int) $request->query('id', 0);
+        $kembali  = $request->query('kembali', url()->previous());
+
+        return view('report.create', compact('tipe', 'idTarget', 'kembali'));
+    }
+
     public function store(Request $request)
     {
-        $request->validate([
-            'tipe_target' => 'required',
-            'id_target' => 'required',
-            'alasan' => 'required'
+        $data = $request->validate([
+            'tipe_target' => ['required', 'in:' . implode(',', $this->tipeValid)],
+            'id_target'   => ['required', 'integer', 'min:1'],
+            'alasan'      => ['required', 'string', 'min:10', 'max:1000'],
+        ], [
+            'alasan.min' => 'Jelaskan alasannya minimal 10 karakter.',
         ]);
+
+        $sudah = Report::where('id_user', auth()->id())
+            ->where('tipe_target', $data['tipe_target'])
+            ->where('id_target', $data['id_target'])
+            ->where('status', 'proses')
+            ->exists();
+
+        if ($sudah) {
+            return redirect()->route('report.index')
+                ->with('error', 'Kamu sudah melaporkan konten ini dan masih ditinjau admin.');
+        }
 
         Report::create([
-            'id_user' => Auth::id(),
-            'tipe_target' => $request->tipe_target,
-            'id_target' => $request->id_target,
-            'alasan' => $request->alasan,
-            'status' => 'menunggu'
+            'id_user'     => auth()->id(),
+            'tipe_target' => $data['tipe_target'],
+            'id_target'   => $data['id_target'],
+            'alasan'      => $data['alasan'],
+            'status'      => 'proses',
         ]);
 
-        return back()
+        Notif::kirim(
+            auth()->id(),
+            'sistem',
+            'Laporan terkirim',
+            'Terima kasih. Laporanmu sedang ditinjau admin.',
+            route('report.index')
+        );
+
+        return redirect()->route('report.index')
             ->with('success', 'Laporan berhasil dikirim.');
-    }
-
-    // Semua laporan admin
-    public function admin()
-    {
-        $reports = Report::with('user')
-            ->latest()
-            ->get();
-
-        return view('admin.report.index', compact('reports'));
-    }
-
-    // Update status laporan
-    public function updateStatus(Request $request, $id)
-    {
-        $report = Report::findOrFail($id);
-
-        $request->validate([
-            'status' => 'required'
-        ]);
-
-        $report->update([
-            'status' => $request->status
-        ]);
-
-        return back()
-            ->with('success', 'Status laporan berhasil diperbarui.');
     }
 }

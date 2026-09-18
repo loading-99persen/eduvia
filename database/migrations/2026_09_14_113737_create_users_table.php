@@ -15,6 +15,9 @@ return new class extends Migration
 
             $table->string('password', 255);
 
+            // KOLOM TAMBAHAN
+            $table->string('remember_token', 100)->nullable();
+
             $table->unsignedInteger('id_role');
 
             $table->enum('status', [

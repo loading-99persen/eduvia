@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             MinatSeeder::class,
             UserSeeder::class,
             ProfilSeeder::class,
+            DemoSeeder::class,
         ]);
     }
 }

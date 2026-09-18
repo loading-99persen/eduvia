@@ -10,15 +10,13 @@ class AdminMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        // Belum login
         if (!auth()->check()) {
-            return redirect('/login')
+            return redirect()->route('login')
                 ->with('error', 'Silakan login terlebih dahulu.');
         }
 
-        // Bukan admin
-        if (auth()->user()->id_role != 1) {
-            return redirect('/beranda')
+        if (!auth()->user()->isAdmin()) {
+            return redirect()->route('beranda')
                 ->with('error', 'Kamu tidak memiliki akses ke halaman admin.');
         }
 

@@ -20,6 +20,19 @@ class Chatroom extends Model
         'dibuat_pada'
     ];
 
+    protected $casts = [
+        'dibuat_pada' => 'datetime',
+    ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $model) {
+            if (empty($model->dibuat_pada)) {
+                $model->dibuat_pada = now();
+            }
+        });
+    }
+
     public function komunitas()
     {
         return $this->belongsTo(

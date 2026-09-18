@@ -21,6 +21,19 @@ class Pesan extends Model
         'dikirim_pada'
     ];
 
+    protected $casts = [
+        'dikirim_pada' => 'datetime',
+    ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $model) {
+            if (empty($model->dikirim_pada)) {
+                $model->dikirim_pada = now();
+            }
+        });
+    }
+
     public function chatroom()
     {
         return $this->belongsTo(

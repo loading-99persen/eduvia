@@ -2,30 +2,32 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Minat;
+use Illuminate\Database\Seeder;
 
 class MinatSeeder extends Seeder
 {
     public function run(): void
     {
         $minat = [
-            'Teknologi',
-            'Pemrograman',
-            'Desain',
-            'Bahasa',
             'Matematika',
+            'Pemrograman',
+            'Database',
+            'Artificial Intelligence',
+            'Bahasa Inggris',
             'Sains',
+            'Desain',
+            'Psikologi',
             'Bisnis',
-            'Musik',
-            'Olahraga',
-            'Seni'
+            'Pengembangan diri',
+            'Statistika',
+            'Sejarah',
+            'Teknologi',
+            'Seni',
         ];
 
         foreach ($minat as $nama) {
-            Minat::create([
-                'nama_minat' => $nama
-            ]);
+            Minat::firstOrCreate(['nama_minat' => $nama]);
         }
     }
 }

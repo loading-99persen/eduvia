@@ -3,54 +3,72 @@
 namespace App\Http\Controllers;
 
 use App\Models\Notifikasi;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 
 class NotifikasiController extends Controller
 {
-    // Semua notifikasi
-    public function index()
+    public function index(Request $request)
     {
-        $notifikasi = Notifikasi::where('id_user', Auth::id())
-            ->latest()
-            ->get();
+        $filter = $request->query('filter', 'semua');
 
-        return view('notifikasi.index', compact('notifikasi'));
+        $notifikasi = Notifikasi::where('id_user', auth()->id())
+            ->when($filter === 'belum', fn ($q) => $q->where('dibaca', false))
+            ->orderByDesc('dibuat_pada')
+            ->orderByDesc('id_notifikasi')
+            ->paginate(20)
+            ->withQueryString();
+
+        $belum = Notifikasi::where('id_user', auth()->id())
+            ->where('dibaca', false)
+            ->count();
+
+        return view('notifikasi.index', compact('notifikasi', 'belum', 'filter'));
     }
 
-    // Tandai sudah dibaca
     public function baca($id)
     {
-        $notifikasi = Notifikasi::where('id_notifikasi', $id)
-            ->where('id_user', Auth::id())
-            ->firstOrFail();
-
-        $notifikasi->update([
-            'status' => 'dibaca'
-        ]);
+        $notifikasi = $this->milikSaya($id);
+        $notifikasi->update(['dibaca' => true]);
 
         return back();
     }
 
-    // Tandai semua sudah dibaca
+    /** Tandai dibaca lalu langsung buka tautan terkait. */
+    public function buka($id)
+    {
+        $notifikasi = $this->milikSaya($id);
+        $notifikasi->update(['dibaca' => true]);
+
+        return redirect($notifikasi->tautan ?: route('notifikasi.index'));
+    }
+
     public function bacaSemua()
     {
-        Notifikasi::where('id_user', Auth::id())
-            ->update([
-                'status' => 'dibaca'
-            ]);
+        Notifikasi::where('id_user', auth()->id())
+            ->where('dibaca', false)
+            ->update(['dibaca' => true]);
 
-        return back();
+        return back()->with('success', 'Semua notifikasi ditandai sudah dibaca.');
     }
 
-    // Hapus notifikasi
     public function destroy($id)
     {
-        $notifikasi = Notifikasi::where('id_notifikasi', $id)
-            ->where('id_user', Auth::id())
+        $this->milikSaya($id)->delete();
+
+        return back()->with('success', 'Notifikasi dihapus.');
+    }
+
+    public function hapusSemua()
+    {
+        Notifikasi::where('id_user', auth()->id())->delete();
+
+        return back()->with('success', 'Semua notifikasi dihapus.');
+    }
+
+    protected function milikSaya($id): Notifikasi
+    {
+        return Notifikasi::where('id_notifikasi', $id)
+            ->where('id_user', auth()->id())
             ->firstOrFail();
-
-        $notifikasi->delete();
-
-        return back();
     }
 }

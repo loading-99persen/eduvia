@@ -21,6 +21,19 @@ class MemberKomunitas extends Model
         'bergabung_pada'
     ];
 
+    protected $casts = [
+        'bergabung_pada' => 'datetime',
+    ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $model) {
+            if (empty($model->bergabung_pada)) {
+                $model->bergabung_pada = now();
+            }
+        });
+    }
+
     public function user()
     {
         return $this->belongsTo(

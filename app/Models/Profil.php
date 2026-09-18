@@ -23,7 +23,8 @@ class Profil extends Model
         'jenis_kelamin',
         'tingkat_pendidikan',
         'institusi',
-        'media_sosial'
+        'media_sosial',
+        'preferensi_belajar'
     ];
 
     public function user()

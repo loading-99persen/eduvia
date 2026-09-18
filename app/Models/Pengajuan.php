@@ -35,6 +35,21 @@ class Pengajuan extends Model
         'diproses_pada'
     ];
 
+    protected $casts = [
+        'tanggal'           => 'date',
+        'tanggal_pengajuan' => 'datetime',
+        'diproses_pada'     => 'datetime',
+    ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $pengajuan) {
+            if (empty($pengajuan->tanggal_pengajuan)) {
+                $pengajuan->tanggal_pengajuan = now();
+            }
+        });
+    }
+
     public function user()
     {
         return $this->belongsTo(
@@ -52,4 +67,21 @@ class Pengajuan extends Model
             'id_komunitas'
         );
     }
+
+    public function getLabelStatusAttribute(): string
+    {
+        return [
+            'proses'    => 'Menunggu',
+            'disetujui' => 'Disetujui',
+            'ditolak'   => 'Ditolak',
+        ][$this->status] ?? 'Menunggu';
+    }
+
+    /**
+ * Scope untuk mengambil pengajuan yang masih menunggu proses admin.
+ */
+public function scopeProses($query)
+{
+    return $query->where($this->getTable() . '.status', 'proses');
+}
 }

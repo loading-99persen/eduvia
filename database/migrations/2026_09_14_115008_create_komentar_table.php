@@ -15,6 +15,9 @@ return new class extends Migration
 
             $table->unsignedInteger('id_user');
 
+            // KOLOM TAMBAHAN
+            $table->unsignedInteger('id_parent')->nullable();
+
             $table->text('komentar');
 
             $table->dateTime('dibuat_pada');
@@ -28,6 +31,13 @@ return new class extends Migration
             $table->foreign('id_user')
                 ->references('id_user')
                 ->on('users')
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
+
+            // Relasi komentar dengan komentar induknya
+            $table->foreign('id_parent')
+                ->references('id_komen')
+                ->on('komentar')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
         });

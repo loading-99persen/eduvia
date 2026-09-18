@@ -24,6 +24,20 @@ class Post extends Model
         'diperbarui_pada'
     ];
 
+    protected $casts = [
+        'dibuat_pada'     => 'datetime',
+        'diperbarui_pada' => 'datetime',
+    ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $post) {
+            if (empty($post->dibuat_pada)) {
+                $post->dibuat_pada = now();
+            }
+        });
+    }
+
     public function user()
     {
         return $this->belongsTo(
@@ -58,5 +72,22 @@ class Post extends Model
             'id_post',
             'id_post'
         );
+    }
+
+    public function milikSaya(): bool
+    {
+        return auth()->check()
+            && (int) $this->id_user === (int) auth()->id();
+    }
+
+    /** Sudah disukai user yang sedang login. */
+    public function getDisukaiAttribute(): bool
+    {
+        if (isset($this->attributes['disukai_count'])) {
+            return (int) $this->attributes['disukai_count'] > 0;
+        }
+
+        return auth()->check()
+            && $this->likes()->where('id_user', auth()->id())->exists();
     }
 }
